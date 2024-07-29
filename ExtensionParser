@@ -1,0 +1,68 @@
+import os
+import json
+import re
+import csv
+
+def search_json_files(folder_path):
+  """
+  Searches each JSON file in the specified folder for the presence of the key-value pair.
+  """
+  print(f"Searching {folder_path} for files containing Extension ID strings...")
+  
+  extension_ids_found = 0
+  errors_occurred = 0
+  
+  # Initialize CSV file and writer
+  csv_file = 'pattern_result.csv'
+  fieldnames = ['extension_id']
+  
+  # Check if CSV file already exists
+  if os.path.exists(csv_file):
+      # Read existing CSV data
+      with open(csv_file, 'r') as file:
+          reader = csv.DictReader(file, fieldnames=fieldnames)
+          csv_data = [row for row in reader]
+  else:
+      csv_data = []
+  
+  for filename in os.listdir(folder_path):
+      if filename.endswith(".json"):
+          file_path = os.path.join(folder_path, filename)
+          print(f"Searching file: {file_path}...")
+          
+          try:
+              with open(file_path, 'r') as file:
+                  json_data = json.load(file)
+                  print("JSON data loaded successfully.")
+                  
+                  # Search for key-value pair
+                  pattern = r"'extension_id':\s*'([^']*)'"
+                  match = re.search(pattern, str(json_data))
+                  
+                  if match:
+                      print(f"Found! for {filename}: {match.group(1)}")
+                      extension_ids_found += 1
+                      
+                      # Add new row if extension_id is unique
+                      if not any(row['extension_id'] == match.group(1) for row in csv_data):
+                          csv_data.append({'extension_id': match.group(1)})
+                  else:
+                      print(f"Not Found! for {filename}")
+                      print("JSON data:")
+                      print(json_data)
+                      
+          except Exception as e:
+              print(f"Error occurred while processing {filename}: {str(e)}")
+              errors_occurred += 1
+              
+  # Write CSV data to file
+  with open(csv_file, 'w', newline='') as file:
+      writer = csv.DictWriter(file, fieldnames=fieldnames)
+      writer.writeheader()
+      writer.writerows(csv_data)
+      
+  print(f"Collection Activity complete: {extension_ids_found} extension IDs found on {len(os.listdir(folder_path))} endpoints. {errors_occurred} errors occurred during execution.")
+
+if __name__ == "__main__":
+  folder_path = input("Enter the folder path to search: ")
+  search_json_files(folder_path)
