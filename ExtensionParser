@@ -11,6 +11,7 @@ def search_json_files(folder_path):
   
   extension_ids_found = 0
   errors_occurred = 0
+  error_messages = []
   
   # Initialize CSV file and writer
   csv_file = 'pattern_result.csv'
@@ -44,7 +45,7 @@ def search_json_files(folder_path):
                       extension_ids_found += 1
                       
                       # Add new row if extension_id is unique
-                      if not any(row['extension_id'] == match.group(1) for row in csv_data):
+                      if not any(row.get('extension_id') == match.group(1) for row in csv_data):
                           csv_data.append({'extension_id': match.group(1)})
                   else:
                       print(f"Not Found! for {filename}")
@@ -54,15 +55,23 @@ def search_json_files(folder_path):
           except Exception as e:
               print(f"Error occurred while processing {filename}: {str(e)}")
               errors_occurred += 1
+              error_messages.append(str(e))
               
   # Write CSV data to file
   with open(csv_file, 'w', newline='') as file:
       writer = csv.DictWriter(file, fieldnames=fieldnames)
       writer.writeheader()
-      writer.writerows(csv_data)
+      writer.writerows([row for row in csv_data if row.get('extension_id') is not None])
       
-  print(f"Collection Activity complete: {extension_ids_found} extension IDs found on {len(os.listdir(folder_path))} endpoints. {errors_occurred} errors occurred during execution.")
+  print(f"Collection Activity complete: {extension_ids_found} extension IDs found in {len(os.listdir(folder_path))} log files. {errors_occurred} errors occurred during execution.")
+  if error_messages:
+      print("Error messages:")
+      for error_message in error_messages:
+          print(error_message)
 
+if __name__ == "__main__":
+  folder_path = input("Enter the folder path to search: ")
+  search_json_files(folder_path)
 if __name__ == "__main__":
   folder_path = input("Enter the folder path to search: ")
   search_json_files(folder_path)
