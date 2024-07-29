@@ -1,0 +1,68 @@
+
+import requests
+
+# IP address set
+ip_addresses = {
+  "8.8.8.8",
+  "208.67.222.222",
+  "198.51.100.1",
+  "52.10.20.30",
+  "104.16.32.1",
+  "212.58.244.70",
+  "194.60.196.1",
+  "213.248.114.1",
+  "109.108.151.1",
+  "217.155.1.1",
+  "210.139.160.1",
+  "202.232.140.1",
+  "203.216.240.1",
+  "210.152.240.1",
+  "219.117.240.1",
+  "139.218.1.1",
+  "203.50.1.1",
+  "202.139.1.1",
+  "210.80.240.1",
+  "203.206.128.1",
+  "80.150.6.1",
+  "217.6.164.1",
+  "194.25.134.1",
+  "212.185.1.1",
+  "85.214.20.1"
+}
+
+# GeoIP API endpoint
+geoip_api = "https://api.ipgeolocation.io/ipgeo"
+
+# API key (replace with your own)
+api_key = "f11b23f4f19c48eeb7abdce8905c0ed2"
+
+# Create a dictionary to store the IP addresses with their corresponding GeoIP locations
+ip_geoip = {}
+
+# Iterate over the IP addresses and query the GeoIP information
+for ip in ip_addresses:
+  response = requests.get(f"{geoip_api}?apiKey={api_key}&ip={ip}")
+  data = response.json()
+  ip_geoip[ip] = {
+      "country": data["country_name"],
+      "region": data["region_name"],
+      "city": data["city"],
+      "latitude": data["latitude"],
+      "longitude": data["longitude"]
+  }
+
+# Print the IP addresses with their corresponding GeoIP locations
+for ip, geoip in ip_geoip.items():
+  print(f"{ip}: {geoip['country']}, {geoip['region']}, {geoip['city']}, {geoip['latitude']}, {geoip['longitude']}")
+
+# Create an index to query the country and return all associated IPs
+country_index = {}
+for ip, geoip in ip_geoip.items():
+  country = geoip["country"]
+  if country not in country_index:
+      country_index[country] = []
+  country_index[country].append(ip)
+
+# Print the country index
+for country, ips in country_index.items():
+  print(f"{country}: {ips}")
