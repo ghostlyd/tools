@@ -1,0 +1,32 @@
+import csv
+import requests
+import json
+
+# Define API endpoint and headers
+api_endpoint = 'https://api.crxcavator.io/v1/report'
+headers = {'Content-Type': 'application/json'}
+
+# Define CSV file and column names
+csv_file = 'target_csv_file.csv'
+extension_id_column = 'extension_id'
+version_column = 'version'
+
+# Read CSV file and iterate through rows
+with open(csv_file, 'r') as f:
+  reader = csv.DictReader(f)
+  for row in reader:
+      extension_id = row[extension_id_column]
+      version = row[version_column]
+
+      # Craft GET request to /report/{extension_id}/{version}?platform=Chrome endpoint
+      url = f'{api_endpoint}/{extension_id}/{version}?platform=Chrome'
+
+      # Submit GET request and get response
+      response = requests.get(url, headers=headers)
+
+      # Check if response was successful
+      if response.status_code == 200:
+          # Output response to JSON
+          print(json.dumps(response.json(), indent=4))
+      else:
+          print(f"Error: {response.status_code}")
